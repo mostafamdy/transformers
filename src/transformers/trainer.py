@@ -807,6 +807,8 @@ class Trainer:
         ignored_columns = list(set(dataset.column_names) - set(signature_columns))
         print("we will reomve these columns ")
         print(ignored_columns)
+        print("dataset.column_names")
+        print(dataset.column_names)
         if len(ignored_columns) > 0:
             dset_description = "" if description is None else f"in the {description} set"
             logger.info(
@@ -2270,7 +2272,7 @@ class Trainer:
                     print(inputs)
                     print(len(inputs['input_ids']))
                     print(len(inputs['input_ids'][0]))
-                    print(len(inputs['input_ids'][0][0]))
+                    # print(len(inputs['input_ids'][0][0]))
                     print("_____________________________"*10)
                     tr_loss_step = self.training_step(model, inputs)
 
