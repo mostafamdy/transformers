@@ -382,6 +382,9 @@ FROM_PRETRAINED_FLAX_DOCSTRING = """
 
 def _get_model_class(config, model_mapping):
     supported_models = model_mapping[type(config)]
+    print("supported_models")
+    print(supported_models)
+
     if not isinstance(supported_models, (list, tuple)):
         return supported_models
 
@@ -444,6 +447,15 @@ class _BaseAutoModelClass:
 
     @classmethod
     def from_pretrained(cls, pretrained_model_name_or_path, *model_args, **kwargs):
+        print("CLS")
+        print(cls)
+        print("pretrained_model_name_or_path")
+        print(pretrained_model_name_or_path)
+        print("model_args")
+        print(model_args)
+        print("kwargs")
+        print(kwargs)
+
         config = kwargs.pop("config", None)
         trust_remote_code = kwargs.pop("trust_remote_code", None)
         kwargs["_from_auto"] = True
@@ -495,6 +507,7 @@ class _BaseAutoModelClass:
                 commit_hash = getattr(config, "_commit_hash", None)
 
         if is_peft_available():
+            print("Peft available")
             if adapter_kwargs is None:
                 adapter_kwargs = {}
                 if token is not None:
@@ -560,7 +573,14 @@ class _BaseAutoModelClass:
                 pretrained_model_name_or_path, *model_args, config=config, **hub_kwargs, **kwargs
             )
         elif type(config) in cls._model_mapping.keys():
+            print("config")
+            print(config)
+            print("cls.model_mapping")
+            print(cls._model_mapping)
+            print("Get Model Class function")
             model_class = _get_model_class(config, cls._model_mapping)
+            print("model_class")
+            print(model_class)
             return model_class.from_pretrained(
                 pretrained_model_name_or_path, *model_args, config=config, **hub_kwargs, **kwargs
             )
@@ -722,11 +742,20 @@ class _LazyAutoMapping(OrderedDict):
         self._extra_content = {}
         self._modules = {}
 
+        print("self._config_mapping")
+        print(self._config_mapping)
+        print("self._reverse_config_mapping")
+        print(self._reverse_config_mapping)
+        print("self._model_mapping")
+        print(self._model_mapping)
+
     def __len__(self):
+        print("len in LAZY")
         common_keys = set(self._config_mapping.keys()).intersection(self._model_mapping.keys())
         return len(common_keys) + len(self._extra_content)
 
     def __getitem__(self, key):
+        print("__getitem__ in LAZY")
         if key in self._extra_content:
             return self._extra_content[key]
         model_type = self._reverse_config_mapping[key.__name__]
@@ -743,12 +772,14 @@ class _LazyAutoMapping(OrderedDict):
         raise KeyError(key)
 
     def _load_attr_from_module(self, model_type, attr):
+        print("_load_attr_from_module in LAZY")
         module_name = model_type_to_module_name(model_type)
         if module_name not in self._modules:
             self._modules[module_name] = importlib.import_module(f".{module_name}", "transformers.models")
         return getattribute_from_module(self._modules[module_name], attr)
 
     def keys(self):
+        print("keys in LAZY")
         mapping_keys = [
             self._load_attr_from_module(key, name)
             for key, name in self._config_mapping.items()
@@ -757,15 +788,18 @@ class _LazyAutoMapping(OrderedDict):
         return mapping_keys + list(self._extra_content.keys())
 
     def get(self, key, default):
+        print("get in LAZY")
         try:
             return self.__getitem__(key)
         except KeyError:
             return default
 
     def __bool__(self):
+        print("__bool__ in LAZY")
         return bool(self.keys())
 
     def values(self):
+        print("values in LAZY")
         mapping_values = [
             self._load_attr_from_module(key, name)
             for key, name in self._model_mapping.items()
@@ -774,6 +808,7 @@ class _LazyAutoMapping(OrderedDict):
         return mapping_values + list(self._extra_content.values())
 
     def items(self):
+        print("items in LAZY")
         mapping_items = [
             (
                 self._load_attr_from_module(key, self._config_mapping[key]),
@@ -785,9 +820,11 @@ class _LazyAutoMapping(OrderedDict):
         return mapping_items + list(self._extra_content.items())
 
     def __iter__(self):
+        print("__iter__ in LAZY")
         return iter(self.keys())
 
     def __contains__(self, item):
+        print("__contains__ in LAZY")
         if item in self._extra_content:
             return True
         if not hasattr(item, "__name__") or item.__name__ not in self._reverse_config_mapping:
@@ -796,6 +833,7 @@ class _LazyAutoMapping(OrderedDict):
         return model_type in self._model_mapping
 
     def register(self, key, value, exist_ok=False):
+        print("register in LAZY")
         """
         Register a new model in this mapping.
         """
