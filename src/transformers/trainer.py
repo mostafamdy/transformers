@@ -2242,6 +2242,9 @@ class Trainer:
                     self.control = self.callback_handler.on_step_begin(args, self.state, self.control)
 
                 with self.accelerator.accumulate(model):
+                    print("before Training steps")
+                    print(inputs)
+                    print("_____________________________"*50)
                     tr_loss_step = self.training_step(model, inputs)
 
                 if (
