@@ -674,12 +674,17 @@ class Trainer:
         self.current_flos = 0
         self.hp_search_backend = None
         default_label_names = find_labels(self.model.__class__)
+        print("default_label_names")
+        print(default_label_names)
         self.label_names = default_label_names if self.args.label_names is None else self.args.label_names
         self.can_return_loss = can_return_loss(self.model.__class__)
         self.control = self.callback_handler.on_init_end(self.args, self.state, self.control)
 
         # Internal variables to help with automatic batch size reduction
         self._train_batch_size = args.train_batch_size
+        print(f"self._train_batch_size in init")
+        print(self._train_batch_size)
+        
         self._created_lr_scheduler = False
 
         # very last
@@ -800,6 +805,8 @@ class Trainer:
         signature_columns = self._signature_columns
 
         ignored_columns = list(set(dataset.column_names) - set(signature_columns))
+        print("we will reomve these columns ")
+        print(ignored_columns)
         if len(ignored_columns) > 0:
             dset_description = "" if description is None else f"in the {description} set"
             logger.info(
@@ -1921,6 +1928,9 @@ class Trainer:
     ):
         self.accelerator.free_memory()
         self._train_batch_size = batch_size
+        print("batch size")
+        print(self._train_batch_size)
+        
         if self.args.auto_find_batch_size:
             if self.state.train_batch_size != self._train_batch_size:
                 from accelerate.utils import release_memory
@@ -1947,11 +1957,15 @@ class Trainer:
         # number of training steps per epoch: num_update_steps_per_epoch
         # total number of training steps to execute: max_steps
         total_train_batch_size = self._train_batch_size * args.gradient_accumulation_steps * args.world_size
-
+        print("total_train_batch_size")
+        print(total_train_batch_size)
         len_dataloader = None
         num_train_tokens = None
         if has_length(train_dataloader):
             len_dataloader = len(train_dataloader)
+            print("len_dataloader")
+            print(len_dataloader)
+            
             num_update_steps_per_epoch = len_dataloader // args.gradient_accumulation_steps
             num_update_steps_per_epoch = max(num_update_steps_per_epoch, 1)
             num_examples = self.num_examples(train_dataloader)
@@ -2116,6 +2130,16 @@ class Trainer:
         logger.info(f"  Total optimization steps = {max_steps:,}")
         logger.info(f"  Number of trainable parameters = {get_model_param_count(model, trainable_only=True):,}")
 
+        print("***** Running training *****")
+        print(f"  Num examples = {num_examples:,}")
+        print(f"  Num Epochs = {num_train_epochs:,}")
+        print(f"  Instantaneous batch size per device = {self.args.per_device_train_batch_size:,}")
+        if self.args.per_device_train_batch_size != self._train_batch_size:
+            print(f"  Training with DataParallel so batch size has been adjusted to: {self._train_batch_size:,}")
+        print(f"  Total train batch size (w. parallel, distributed & accumulation) = {total_train_batch_size:,}")
+        print(f"  Gradient Accumulation steps = {args.gradient_accumulation_steps}")
+        print(f"  Total optimization steps = {max_steps:,}")
+        print(f"  Number of trainable parameters = {get_model_param_count(model, trainable_only=True):,}")
         self.state.epoch = 0
         start_time = time.time()
         epochs_trained = 0
@@ -2244,7 +2268,10 @@ class Trainer:
                 with self.accelerator.accumulate(model):
                     print("before Training steps")
                     print(inputs)
-                    print("_____________________________"*50)
+                    print(len(inputs['input_ids']))
+                    print(len(inputs['input_ids'][0]))
+                    print(len(inputs['input_ids'][0][0]))
+                    print("_____________________________"*10)
                     tr_loss_step = self.training_step(model, inputs)
 
                 if (
@@ -3301,6 +3328,10 @@ class Trainer:
         else:
             labels = None
         outputs = model(**inputs)
+        print("outputs")
+        print(outputs)
+        print("len outputs")
+        print(len(outputs))
         # Save past state if it exists
         # TODO: this needs to be fixed and made cleaner later.
         if self.args.past_index >= 0:
