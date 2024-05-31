@@ -922,6 +922,8 @@ class LlamaModel(LlamaPreTrainedModel):
             use_cache = False
 
         if inputs_embeds is None:
+            print("We will embed tokens here ")
+            print(f"tokens count {len(input_ids)}")
             inputs_embeds = self.embed_tokens(input_ids)
 
         return_legacy_cache = False
@@ -948,7 +950,7 @@ class LlamaModel(LlamaPreTrainedModel):
         all_hidden_states = () if output_hidden_states else None
         all_self_attns = () if output_attentions else None
         next_decoder_cache = None
-
+        
         for decoder_layer in self.layers:
             if output_hidden_states:
                 all_hidden_states += (hidden_states,)
@@ -1154,6 +1156,22 @@ class LlamaForCausalLM(LlamaPreTrainedModel):
         >>> tokenizer.batch_decode(generate_ids, skip_special_tokens=True, clean_up_tokenization_spaces=False)[0]
         "Hey, are you conscious? Can you talk to me?\nI'm not conscious, but I can talk to you."
         ```"""
+        print("In Forward LLamaForCausalLM")
+        print("Input IDs")
+        print(input_ids)
+        
+        print("position_ids")
+        print(position_ids)
+        
+        print("inputs_embeds")
+        print(inputs_embeds)
+        
+        print("past_key_values")
+        print(past_key_values)
+        
+        print("use_cache")
+        print(use_cache)
+
         output_attentions = output_attentions if output_attentions is not None else self.config.output_attentions
         output_hidden_states = (
             output_hidden_states if output_hidden_states is not None else self.config.output_hidden_states
@@ -1173,7 +1191,6 @@ class LlamaForCausalLM(LlamaPreTrainedModel):
             return_dict=return_dict,
             cache_position=cache_position,
         )
-
         hidden_states = outputs[0]
         if self.config.pretraining_tp > 1:
             lm_head_slices = self.lm_head.weight.split(self.vocab_size // self.config.pretraining_tp, dim=0)
@@ -1182,7 +1199,11 @@ class LlamaForCausalLM(LlamaPreTrainedModel):
         else:
             logits = self.lm_head(hidden_states)
         logits = logits.float()
-
+        print("logits")
+        print(logits)
+        print("logits Length")
+        print(len(logits))
+        print("------------------------------------")
         loss = None
         if labels is not None:
             # Shift so that tokens < n predict n
@@ -1194,8 +1215,16 @@ class LlamaForCausalLM(LlamaPreTrainedModel):
             shift_labels = shift_labels.view(-1)
             # Enable model parallelism
             shift_labels = shift_labels.to(shift_logits.device)
+            print("Shift Logits")
+            print(shift_logits)
+            print("------------------------------------")
+            print("shift_labels")
+            print(shift_labels)
+            print("------------------------------------")
             loss = loss_fct(shift_logits, shift_labels)
-
+            print("Loss")
+            print(loss)
+            print("------------------------------------")
         if not return_dict:
             output = (logits,) + outputs[1:]
             return (loss,) + output if loss is not None else output
