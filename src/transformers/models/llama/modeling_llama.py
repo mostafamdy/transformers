@@ -923,7 +923,7 @@ class LlamaModel(LlamaPreTrainedModel):
 
         if inputs_embeds is None:
             print("We will embed tokens here ")
-            print(f"tokens count {len(input_ids)}")
+            print(f"tokens count {len(input_ids[0])}")
             inputs_embeds = self.embed_tokens(input_ids)
 
         return_legacy_cache = False
@@ -1202,7 +1202,8 @@ class LlamaForCausalLM(LlamaPreTrainedModel):
         print("logits")
         print(logits)
         print("logits Length")
-        print(len(logits))
+        print(len(logits[0]))
+        print(len(logits[0][0]))
         print("------------------------------------")
         loss = None
         if labels is not None:
