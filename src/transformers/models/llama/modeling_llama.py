@@ -706,6 +706,11 @@ class LlamaDecoderLayer(nn.Module):
         """
         residual = hidden_states
 
+        print("input hidden states size")
+        print(residual.size())
+        print("past key value in decoder")
+        print(past_key_value)
+
         hidden_states = self.input_layernorm(hidden_states)
 
         # Self Attention
@@ -718,8 +723,10 @@ class LlamaDecoderLayer(nn.Module):
             use_cache=use_cache,
             cache_position=cache_position,
         )
-        hidden_states = residual + hidden_states
 
+        print("present_key_value")
+        print(present_key_value)
+        hidden_states = residual + hidden_states
         # Fully Connected
         residual = hidden_states
         hidden_states = self.post_attention_layernorm(hidden_states)
@@ -727,6 +734,8 @@ class LlamaDecoderLayer(nn.Module):
         hidden_states = residual + hidden_states
 
         outputs = (hidden_states,)
+        print("finally output size")
+        print(hidden_states.size())
 
         if output_attentions:
             outputs += (self_attn_weights,)
@@ -920,11 +929,13 @@ class LlamaModel(LlamaPreTrainedModel):
                 "`use_cache=True` is incompatible with gradient checkpointing. Setting `use_cache=False`."
             )
             use_cache = False
-
+        print("LLama Model forword")
         if inputs_embeds is None:
             print("We will embed tokens here ")
             print(f"tokens count {len(input_ids[0])}")
             inputs_embeds = self.embed_tokens(input_ids)
+            print("embedd shape")
+            print(inputs_embeds.size())
 
         return_legacy_cache = False
         if use_cache and not isinstance(past_key_values, Cache):  # kept for BC (non `Cache` `past_key_values` inputs)
@@ -950,11 +961,12 @@ class LlamaModel(LlamaPreTrainedModel):
         all_hidden_states = () if output_hidden_states else None
         all_self_attns = () if output_attentions else None
         next_decoder_cache = None
-        
+        d_n=0
         for decoder_layer in self.layers:
+            d_n+=1
             if output_hidden_states:
                 all_hidden_states += (hidden_states,)
-
+            print(" Going to decoder "+str(d_n))
             if self.gradient_checkpointing and self.training:
                 layer_outputs = self._gradient_checkpointing_func(
                     decoder_layer.__call__,
@@ -997,6 +1009,9 @@ class LlamaModel(LlamaPreTrainedModel):
 
         if not return_dict:
             return tuple(v for v in [hidden_states, next_cache, all_hidden_states, all_self_attns] if v is not None)
+        print("all_hidden_states len ")
+        print(len(all_hidden_states))
+
         return BaseModelOutputWithPast(
             last_hidden_state=hidden_states,
             past_key_values=next_cache,
