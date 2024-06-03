@@ -1009,9 +1009,6 @@ class LlamaModel(LlamaPreTrainedModel):
 
         if not return_dict:
             return tuple(v for v in [hidden_states, next_cache, all_hidden_states, all_self_attns] if v is not None)
-        print("all_hidden_states len ")
-        print(len(all_hidden_states))
-
         return BaseModelOutputWithPast(
             last_hidden_state=hidden_states,
             past_key_values=next_cache,
