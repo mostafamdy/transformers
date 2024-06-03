@@ -966,6 +966,7 @@ class LlamaModel(LlamaPreTrainedModel):
             d_n+=1
             if output_hidden_states:
                 all_hidden_states += (hidden_states,)
+            print("-"*20)
             print(" Going to decoder "+str(d_n))
             if self.gradient_checkpointing and self.training:
                 layer_outputs = self._gradient_checkpointing_func(
@@ -1009,6 +1010,7 @@ class LlamaModel(LlamaPreTrainedModel):
 
         if not return_dict:
             return tuple(v for v in [hidden_states, next_cache, all_hidden_states, all_self_attns] if v is not None)
+        print("-"*20)
         return BaseModelOutputWithPast(
             last_hidden_state=hidden_states,
             past_key_values=next_cache,
